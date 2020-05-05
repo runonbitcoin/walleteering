@@ -18,15 +18,17 @@
 
 async function purseTests(run, supportsBackedJigs = true) {
     class Weapon extends Jig {
-        upgrade () { this.upgrades = this.upgrades + 1 }
+        upgrade () { this.upgrades = (this.upgrades || 0) + 1 }
         setMeltValue (satoshis) { this.satoshis = satoshis }
     }
 
     console.log('Test 01: Pay for a single dust output')
+    // We use deploy() to create a single unspent output, the class
     run.deploy(Weapon)
     await run.sync()
 
     console.log('Test 02: Pay for multiple dust outputs')
+    // We use a batch to create two unspent outputs, two instances
     run.transaction.begin()
     const sword = new Weapon()
     const staff = new Weapon()
@@ -34,10 +36,12 @@ async function purseTests(run, supportsBackedJigs = true) {
     await run.sync()
 
     console.log('Test 03: Pay for a single dust input and output')
+    // Calling a method spends the output and creates a new output
     sword.upgrade()
     await run.sync()
 
     console.log('Test 04: Pay for multiple dust inputs and outputs')
+    // We use a batch to update two jigs, spending and creating two outputs
     run.transaction.begin()
     sword.upgrade()
     staff.upgrade()

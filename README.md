@@ -4,7 +4,7 @@ This project is designed to help third-party wallets integrate with Run.
 
 ## Contents
 
-- `demo` - structure of a basic third-party wallet
+- `demo` - demo of a working remote wallet running on an express server
 - `guide` - step-by-step tutorials for writing a wallet adapter
 - `tests` - code you can use to validate that your adapter is working
 

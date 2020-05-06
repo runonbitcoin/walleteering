@@ -75,9 +75,9 @@ Run creates two token outputs, one for the `Dragon` class, and one for the `new 
 | | P2PKH<br>Dragon class<br>546 satoshis |
 | | P2PKH<br>Dragon instance<br>546 satoshis |
 
-Notice there are no inputs. This is because new resources are created from scratch and assigned to their initial owners. Their initial owners are determined by the ... `Owner API`.
+Notice there are no inputs. This is because new resources are created from scratch and assigned to their initial owners. Their initial owners are determined by the, you guessed it, the `Owner API`. Here's how it works.
 
-Shortly after you call `new Dragon()`, Run calls the `owner()` method on the `Owner API` to get an initial value. The `owner()` method normally returns an *address* string that the `Owner API` will later sign. This value is then set as `Dragon.owner` and `dragon.owner`, and Run uses those owner values to build the output script in the *partial transaction*.
+Shortly after you call `new Dragon()`, Run calls the `owner()` method, and the value that it returns is assigned as `Dragon.owner` and `dragon.owner`. The `owner()` method normally returns an *address* string, specifically an address for a private key that the wallet control. Then, Run uses those owner values to build the output script in the *partial transaction* just like the example before.
 
 Implementing `owner()` will be covered in [Chapter 3: Implementing Owner](03-owner.md).
 

@@ -4,8 +4,6 @@ This project is designed to help third-party wallets integrate with Run.
 
 To get started, run `npm install` and then head over to the [first tutorial](guide/01-background.md).
 
-Happy walleteering!
-
 ## Guide
 
 - [Tutorial 1: Background Knowledge](guide/01-background.md)

@@ -70,33 +70,19 @@ However, you'll also see the following error: `Error: Broadcast failed: tx has n
 
 ## The pay() method
 
-Run passes a *partial transaction* into the `pay()` method. It's job is to make this transaction acceptable to miners by adding inputs and outputs that give it an appropriate fee and then to sign the transaction. If the transaction is not paid for successfully, it cannot be broadcast.
+The job of the `pay()` method is to make the transaction acceptable to miners. It does this by adding inputs and outputs to raise its fee and then it should sign these inputs. If the transaction is not paid for successfully, it cannot be broadcast. The first step is to establish a two-way connection between the adapter and your wallet.
 
-## Set up two-way communication
+### Set up two-way communication
 
-While in theory payment may be done in the adapter itself, to hide private keys and other secrets, you'll like want to implement a two-way communication between **application-space** where Run lives and **wallet-space** where the wallet runs. Wallet-space may be a hidden `iframe`, a node backend, a browser extension, or a separate application altogether! As a first step to implement `pay()`, we recommend setting up two-way communication. This is likely to be an asyncronous task, so the `pay()` method is accordingly `async`.
+While in theory we could do everything in the `pay()` method itself, to hide private keys and other secrets, it's better if this work is actually done in the wallet so that application never has a chance to see private keys. There are many types of wallets and the details will depend on your wallet. Wallet-space may be a hidden `iframe`, a web server, a browser extension, or even a hardware device. Communication is likely to be asyncronous, so you'll notice the `pay()` method is an async method.
 
-If your wallet runs in a hidden `iframe` as many browser wallets do, you may use [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to send the transaction to your wallet and `addEventListener` to receive it on the other side. After paying for the transaction, your wallet may send the transaction back to *application space* using the same method. Objects that cross these borders are serialized with special rules, so we recommend passing passing the hex transaction string across this boundary.
+![Communication Flow](assets/communication_flow.png)
 
-Here is a basic link in my-wallet.js:
+If your wallet runs in a hidden `iframe`, you may use [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to send the transaction to your wallet and `addEventListener` to receive it. Then, the wallet may securely pay for the transaction. After the transaction is paid, your wallet sends the transaction back to *application space* using `postMessage`, and the adapter receives it and returns it to Run. Data that crosses these boundaries will be serialized, so we recommend passing passing transactions in hex to be safe.
 
-    async pay(txhex) {
-        return new Promise((resolve, reject) => {
-            const contentWindow = document.getElementById('my-wallet-iframe')
+Other wallet backends require different yet similar code to send and receive the transaction. You'll find an example of using `fetch()` calls to talk to an express server in the `demo` project.
 
-            contentWindow.postMessage({ cmd: 'pay', tx: txhex }, '*')
-
-            contentWindow.addEventListener('message', event => {
-                if (event.cmd === 'pay') {
-                    resolve(event.data.txhex)
-                }
-            }, false);
-        })
-    }
-
-Other wallet backends require different yet similar code to send and receive the transaction.
-
-Once you have two-way communication set up, test it by logging your calls to the wallet.
+Once you have two-way communication set up, test it by logging calls both in application space and wallet space.
 
 ## Pay for the transaction
 
@@ -123,6 +109,7 @@ However, different wallets will take different approaches.
 
 ## Productionize
 
+- Retry
 - Run works in both the browser and in node. If your library only works in one of these environments, specify this.
 - Detecting network? Or specify when create
 

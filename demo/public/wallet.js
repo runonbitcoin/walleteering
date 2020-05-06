@@ -23,13 +23,13 @@ class ThirdPartyWallet {
      * 
      * We also sign payment inputs in this method.
      */
-    async pay (tx) {
+    async pay (txhex) {
         console.log('paying')
 
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(tx.toJSON()) 
+            body: txhex
         }
 
         const json = await fetch('/pay', options).then(r => r.json())
@@ -40,13 +40,13 @@ class ThirdPartyWallet {
     /**
      * Signs owner inputs
      */
-    async sign (tx, locks) {
+    async sign (txhex, locks) {
         console.log('signing')
 
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(tx.toJSON()) 
+            body: txhex
         }
 
         const json = await fetch('/unlock', options).then(r => r.json())
@@ -57,7 +57,7 @@ class ThirdPartyWallet {
     /**
      * Notifies us when the tx we signed is broadcast. Might need to update the wallet utxos.
      */
-    async broadcast(tx) {
+    async broadcast(txhex) {
         console.log('broadcasting')
     }
 

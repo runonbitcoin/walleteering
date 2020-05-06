@@ -1,0 +1,9 @@
+{
+  "name": "@runonbitcoin/walleteering",
+  "version": "0.1.0",
+  "description": "Project designed to help third-party wallets integrate with Run",
+  "repository": "git+https://github.com/runonbitcoin/walleteering.git",
+  "dependencies": {
+    "@runonbitcoin/release": "github:runonbitcoin/release"
+  }
+}

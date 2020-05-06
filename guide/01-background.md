@@ -22,19 +22,21 @@ Unfortunately, it also means that special care must be taken not to accidentally
 
 Run requires two sets of keys to use:
 
-* The **owner** is the account that stores the user’s jigs and code. All tokens in Run are represented as UTXOs. 
+* The **owner** is the account that stores the user’s jigs and code.
 
-* The **purse** is the account that pays for a token transaction, most commonly its miner fees. This account is separate from the owner.
+* The **purse** is the account that pays for a token transaction, most commonly its miner fees.
 
 When learning Run, users learn they can specify these accounts as private keys:
 
     new Run({ owner: '<owner key>', purse: '<purse key>' })
 
-But, that's not the full story. Run actually treats these as APIs. It never *needs* to see any keys. An owner is just an implementation of the `Owner API`. A purse is just an implementation of the `Purse API`. You'll find APIs documented in the API Reference section of the Run docs.
+But that's not the full story. Run actually treats accesses two accounts through APIs. It never *needs* to see the private keys. See, an owner is just an implementation of the `Owner API`, and a purse is just an implementation of the `Purse API`. When the user specifies private keys like above, Run turns these into instances of `LocalOwner` and `LocalPurse` that implement these APIs. You'll find the APIs documented in the API Reference section of the Run docs.
 
-By implementing these APIs, a wallet can store the keys securely in an iframe or on a backend, sign there, and talk to Run via a secure channel.
+By implementing these APIs, a wallet can store the keys securely in an iframe or on a backend, sign everything there, and send signed transactions back to Run over a secure channel.
 
 ## How Run Builds a Transaction
+
+To grasp how these APIs are accessed, it's useful to walk through a couple examples.
 
 When you type:
 
@@ -47,7 +49,7 @@ Run internally builds a *partial transaction* that looks like:
 | P2PKH<br>Dragon instance<br>546 satoshis<br>**UNSIGNED** | OP_RETURN<br>`dragon.setName('Empress')` |
 | | P2PKH<br>Dragon instance<br>546 satoshis |
 
-Miners will not accept this transaction because there are no miner fees. So, Run calls the purse’s `pay()` method and passes in this partial transaction. The purse's job is to add the necessary inputs and outputs to make this transaction acceptable to miners. Then, they sign the payment inputs and returns the updated transaction back to Run. The transaction returned might look like:
+Miners will not accept this transaction because there are no miner fees. So, Run calls the purse’s `pay()` method and passes in this partial transaction. The purse's job is to add the necessary inputs and outputs to this transaction to make it acceptable to miners. Then, the purse should sign the payment inputs it added and return the updated transaction back to Run. The updated transaction might look like:
 
 | Inputs | Outputs |
 |--------|---------|
@@ -55,7 +57,7 @@ Miners will not accept this transaction because there are no miner fees. So, Run
 | P2PKH<br>Payment<br>10000 satoshis<br>**SIGNED** | P2PKH<br>Dragon instance<br>546 satoshis |
 | | P2PKH<br>Change<br>9000 satoshis |
 
-Input #2 and Output #3 were both added by the purse. However, Input #1 is still unsigned. It could not be signed before all transaction inputs and outputs were added. Now, this transaction is sent to the owner’s `sign()` method to sign the jig inputs. The `sign()` method is also passed information that Input #1 is a jig input so that it knows what to sign. It returns a fully signed transaction.
+Input #2 and Output #3 were both added by the purse. However, Input #1 is still unsigned. It was not possible to sign Input #1 before all payment inputs and outputs were added. This transaction is now sent to the owner’s `sign()` method to sign the jig inputs. The `sign()` method is also passed information that Input #1 is a jig so that it knows which inputs to sign. The owner should return a fully signed transaction.
 
 The transaction is now complete and Run will broadcast it.
 
@@ -65,7 +67,7 @@ There is a second flow to build a transaction when you create new resources. Whe
 
     new Dragon()
 
-Run creates two token outputs, one for the Dragon class, and one for the new dragon instance. The partial transaction looks like:
+Run creates two token outputs, one for the `Dragon` class, and one for the `new Dragon()` instance. The *partial transaction* looks like:
 
 | Inputs | Outputs |
 |--------|---------|
@@ -73,9 +75,11 @@ Run creates two token outputs, one for the Dragon class, and one for the new dra
 | | P2PKH<br>Dragon class<br>546 satoshis |
 | | P2PKH<br>Dragon instance<br>546 satoshis |
 
-The output scripts for each new resource should be controlled by the **owner** account. To do this, when building the partial transaction, Run calls the `owner` *getter* on the **owner** object. Usually, the `owner` *getter* will return an *address* string that the Owner API is able to sign. This will be covered more in [Chapter 3: Implementing Owner](03-owner.md).
+Notice there are no inputs. This is because new resources are created from scratch and assigned to their initial owners. Their initial owners are determined by the ... `Owner API`.
 
-The value returned from this getter is set as `Dragon.owner` and `dragon.owner`, and then Run uses those owner values to build the output scripts.
+Shortly after you call `new Dragon()`, Run calls the `owner()` method on the `Owner API` to get an initial value. The `owner()` method normally returns an *address* string that the `Owner API` will later sign. This value is then set as `Dragon.owner` and `dragon.owner`, and Run uses those owner values to build the output script in the *partial transaction*.
+
+Implementing `owner()` will be covered in [Chapter 3: Implementing Owner](03-owner.md).
 
 ## Where to go from here?
 

@@ -7,7 +7,7 @@ In this chapter, you'll implement the `Purse API` in an adapter that calls your 
 Here is Run's `Purse API`:
 
     class Purse {
-        async pay(txhex: string) : string
+        async pay(txhex: string, spent: number) : string
         async broadcast(txhex: string)
     }
 
@@ -30,7 +30,7 @@ Inside `my-wallet.js`, you'll see a placeholder:
 
 ```
 class MyWallet {
-    pay(txhex) {
+    pay(txhex, spent) {
         const tx = new bsv.Transaction(txhex)
 
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -70,11 +70,23 @@ However, you'll also see the following error: `Error: Broadcast failed: tx has n
 
 ## The pay() method
 
-The job of the `pay()` method is to make the transaction acceptable to miners. It does this by adding inputs and outputs to raise its fee and then it should sign these inputs. If the transaction is not paid for successfully, it cannot be broadcast. The first step is to establish a two-way connection between the adapter and your wallet.
+The job of the `pay()` method is to make the transaction acceptable to miners. It does this by adding inputs and outputs to raise its fee and then sign those new inputs. There are two parameters passed to `pay()`, `txhex` and `spent`. 
+
+`txhex` is the partial transaction that Run builds. You should inflate this transaction into an object to add additional inputs and outputs. The [bsv library](https://github.com/moneybutton/bsv), while optional, is capable of inflating the hex transaction via
+
+    new bsv.Transaction(txhex)
+
+and converting it back to hex again via
+
+    tx.toString('hex')
+
+The second parameter is called `spent` and it's the total amount of satoshis spent as inputs in the transaction. Where as output amounts are part of the transaction, input amounts are not, so you may use this value to void having to do UTXO lookups when calculating the miner fee. Finally, the return value from `pay()` is the paid transaction in hex format again.
+
+To implement `pay()`, the first step is to establish a two-way connection between the adapter and your wallet.
 
 ### Set up two-way communication
 
-While in theory we could do everything in the `pay()` method itself, to hide private keys and other secrets, it's better if this work is actually done in the wallet so that application never has a chance to see private keys. There are many types of wallets and the details will depend on your wallet. Wallet-space may be a hidden `iframe`, a web server, a browser extension, or even a hardware device. Communication is likely to be asyncronous, so you'll notice the `pay()` method is an async method.
+While in theory we could do everything in the `pay()` method itself, to hide private keys and other secrets, it's better if the signing is perofrmed in the wallet so the application never has a chance to see the user's private keys. Wallets may be a hidden `iframe`, a web server, a browser extension, or even a hardware device. There are many types and the details will depend on your kind of wallet. However, communication is likely to be asyncronous, so you'll notice the `pay()` method is an async method.
 
 ![Communication Flow](assets/communication_flow.png)
 
@@ -86,20 +98,22 @@ Once you have two-way communication set up, test it by logging calls both in app
 
 ## Pay for the transaction
 
-The `pay()` method is passed a *partial transaction*. Its goal is to add the inputs and outputs necessary for miners to accept the transaction, and then sign it. While this may be done in the adapter, 
-
-A general strategy is to:
+It is likely that your wallet already has a method to pay for a transaction, so we won't dwell on the details. A general strategy is:
 
 1. Add enough UTXOs to more than cover the transaction
-2. Add a change output, returning all but the miner transaction fee to the purse
-3. Sign the inputs that were transaction
+2. Calculate the expected miner fees
+3. Add a change output, returning all but the fee back to the purse
+4. Sign the new inputs added
 
-However, different wallets will take different approaches.
+Calculating the miner fee is worth dwelling on. The partial transaction passed to `pay()` will already have inputs and outputs. Run supports a feature called **backed jigs** which are tokens backed by an amount of BSV in their UTXOs. These backed jigs may be outputs, inputs, or both, so wallets should not assume that all inputs and outputs are dust. In fact this assumption is likely to lead to bugs. Therefore it's recommended that your first adapter not support backed jigs at all. You can detect backed jigs via:
 
-- Rule of thumb: Pay more than you need, and then receive change
-- Placeholder signatures
+    const hasNonDustInputs = spent / tx.inputs.length > 546
+    const hasNonDustOutputs = tx.outputs.some(output => output.satoshis > 546)
+    const hasBackedJigs = hasNonDustInputs || hasNonDustOutputs
 
-- Don't pay for non-dust outputs / backed jigs
+If `hasBackedJigs` is true, throw an error. we'll cover how to support backed jigs in [Chapter 4: Advanced Considerations](04-advanced.md).
+
+The inputs of the transaction will also have their unlocking scripts set to dummy placeholders that are the presumptive length of the actual signature scripts. You can use this knowledge when calculating the fee because the final transaction is unlikely to be bigger than the original plus any inputs and outputs you add. The current recommended miner fee as of May 2020 is 0.5 satoshis per byte.
 
 ## Secure your wallet
 

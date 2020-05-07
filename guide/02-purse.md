@@ -150,9 +150,11 @@ Finally, Run works in both the browser and node. If your wallet also supports bo
 
 ## Where to go from here?
 
-[Chapter 3: Implementing Owner](03-owner.md)
+Congratulations! Feel free to share your wallet with developers. I'm sure even just having purse functionality will be helpful. Hopefully this tutorial also made your wallet more flexible for future APIs too. When you're ready, let's continue on to [Chapter 3: Implementing Owner](03-owner.md).
 
-- Create a minified builds for the browser
+For some extra credit:
+
+- Create a minified build for the browser
 - Automate testing of your wallet adapter
 - Read about *Backed Jigs* in the Run documentation
 - Look at the purse implementation in the demo project

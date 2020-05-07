@@ -123,7 +123,7 @@ To test your wallet in different scenarioes, we provide a small set of tests in 
 
     await purseTests(run, { supportsBackedJigs: false })
     
-Make sure all tests pass before moving on. Congratulations, you've now implemented a purse.
+Make sure all tests pass before moving on. Congratulations, you've now implemented a purse!
 
 ## Securing your wallet
 
@@ -140,11 +140,13 @@ It's possible to use Run to generate very large data transactions. This also may
 
 Lastly, it is very important to authenticate the application to the wallet. Users may log in with your wallet using a password, or the app may authenticate itself with a token, or any number of techniques, but however this is done, take some care to make sure it's the app that is calling the wallet.
 
-## Productionize
+## Productionization
 
-- Retry
-- Run works in both the browser and in node. If your library only works in one of these environments, specify this.
-- Detecting network? Or specify when create
+If your wallet performs any network calls, consider adding retries and timeouts. If the wallet fails to pay for a transaction, the jigs will be rolled back. While application developers are expected to plan for this, you can minimize the chances by improving robustness. Run will wait forever if necessary when calling your purse, so this is up to you.
+
+Many wallets only work on mainnet. If this is the case for you, it is prudent to ask the user to specify the network when creating the wallet. This ensures they don't accidentally use the wallet on the wrong network. Otherwise, the only way to differentiate between mainnet and testnet is by querying UTXOs.
+
+Finally, Run works in both the browser and node. If your wallet also supports both, now would be a good time to add a build tool like `webpack` or `rollup` to build for both the browser and node. Make sure to test both!
 
 ## Where to go from here?
 

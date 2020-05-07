@@ -80,11 +80,11 @@ and converting it back to hex again via
 
     tx.toString('hex')
 
-The second parameter is called `spent` and it's the total amount of satoshis spent as inputs in the transaction. Where as output amounts are part of the transaction, input amounts are not, so you may use this value to void having to do UTXO lookups when calculating the miner fee. Finally, the return value from `pay()` is the paid transaction in hex format again.
+The second parameter, `spent`, and is the total amount of satoshis spent in inputs of the transaction. Where as output amounts are part of the transaction itself, input amounts are not, so you may find this value helpful when calculating the miner fee. Finally, the return value from `pay()` should be the paid transaction in hex format.
 
-To implement `pay()`, the first step is to establish a two-way connection between the adapter and your wallet.
+To implement `pay()`, your first step is to establish a two-way connection between the adapter and your wallet.
 
-### Set up two-way communication
+### Setting up two-way communication
 
 While in theory we could do everything in the `pay()` method itself, to hide private keys and other secrets, it's better if the signing is perofrmed in the wallet so the application never has a chance to see the user's private keys. Wallets may be a hidden `iframe`, a web server, a browser extension, or even a hardware device. There are many types and the details will depend on your kind of wallet. However, communication is likely to be asyncronous, so you'll notice the `pay()` method is an async method.
 
@@ -96,7 +96,7 @@ Other wallet backends require different yet similar code to send and receive the
 
 Once you have two-way communication set up, test it by logging calls both in application space and wallet space.
 
-## Pay for the transaction
+## Paying for a transaction
 
 It is likely that your wallet already has a method to pay for a transaction, so we won't dwell on the details. A general strategy is:
 
@@ -115,11 +115,30 @@ If `hasBackedJigs` is true, throw an error. we'll cover how to support backed ji
 
 The inputs of the transaction will also have their unlocking scripts set to dummy placeholders that are the presumptive length of the actual signature scripts. You can use this knowledge when calculating the fee because the final transaction is unlikely to be bigger than the original plus any inputs and outputs you add. The current recommended miner fee as of May 2020 is 0.5 satoshis per byte.
 
-## Secure your wallet
+## Testing your purse
 
-- Auth
-- Check if run transactions
-- Limits on amount spend
+At this point, you should have two-way communication and a payment working. It is now time to open `test.html` again and see if your purse works! Using the dragon code from before, if your purse works, there should be no errors and you should be able to see the transaction on a blockchain.
+
+To test your wallet in different scenarioes, we provide a small set of tests in the `tests` directory of this project. Go ahead and open `purse-tests.js` and copy the contents into `test.html`. Then run the tests via
+
+    await purseTests(run, { supportsBackedJigs: false })
+    
+Make sure all tests pass before moving on. Congratulations, you've now implemented a purse.
+
+## Securing your wallet
+
+In theory, anyone is able to call `run.purse.pay()` and use your purse to pay for any transaction, not just a Run transaction. This might actually be OK depending on your wallet, but if you'd like to restrict the wallet adapter to only Run transactions, this is easy. An Run protocol always has a OP_RETURN output as its first output, and the contents of the script will always begins with `OP_FALSE OP_RETURN "run"`, or 006a0372756e in hex. Here's code using the `bsv` library:
+
+```
+const isRunTransaction =
+    tx.outputs.length &&
+    tx.outputs[0].script.isSafeDataOut() &&
+    tx.outputs[0].script.chunks[2].buf.toString('utf8') === 'run'
+```
+
+It's possible to use Run to generate very large data transactions. This also may be OK, but consider setting a limit on either the total amount to spend per transaction, or the total amount to spend per app over some time period.
+
+Lastly, it is very important to authenticate the application to the wallet. Users may log in with your wallet using a password, or the app may authenticate itself with a token, or any number of techniques, but however this is done, take some care to make sure it's the app that is calling the wallet.
 
 ## Productionize
 
@@ -127,16 +146,11 @@ The inputs of the transaction will also have their unlocking scripts set to dumm
 - Run works in both the browser and in node. If your library only works in one of these environments, specify this.
 - Detecting network? Or specify when create
 
-## Testing your purse
-
-- purseTests(run, { supportsBackedJigs: false })
-
 ## Where to go from here?
 
 [Chapter 3: Implementing Owner](03-owner.md)
 
-- Automate testing for your purse
-- Create a minified browser build
-- Support node
+- Create a minified builds for the browser
+- Automate testing of your wallet adapter
 - Read about *Backed Jigs* in the Run documentation
 - Look at the purse implementation in the demo project

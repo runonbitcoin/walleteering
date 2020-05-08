@@ -1,6 +1,6 @@
 # Chapter 3. Implementing Owner
 
-You may wonder how a wallet could be expected to manage items as diverse as tickets, social media posts, game items, digital pets, votes, rewards points, and more, each with their own challenges and user interfaces. Here's the good news: you won't have to! Run was built to cleanly separate the responsibilities of the wallet, Run, and apps.
+You may wonder how a wallet could be expected to manage items as diverse as tickets, social media posts, game items, digital pets, votes, rewards points, and more, each with their own challenges and user interfaces. Here's the good news: you won't have to! Run was built to cleanly separate the responsibilities of the wallet, Run, and apps. Broadly speaking:
 
 | Run | Wallet | App |
 | --- | ------ | --- |
@@ -20,7 +20,7 @@ Here is Run's `Owner API`:
         async sign(txhex: string, locks: Array<Lock>)
     }
 
-This is what we'll implement. Users may either pass your wallet as both the `owner` and the `purse`, or it may pass them as a `wallet` which is shorthand for both.
+This is what we'll implement on our wallet. Our wallet will implement both the `Purse` and the `Owner` APIs at the same time. Users may pass your wallet as both the `owner` and the `purse`, or they may pass it as a `wallet` which is shorthand for both.
 
     const run = new Run({ owner: myWallet, purse: myWallet })
 
@@ -28,7 +28,7 @@ This is what we'll implement. Users may either pass your wallet as both the `own
 
     const run = new Run({ wallet: myWallet })
 
-To get started, paste the following into your `MyWallet` class in `my-wallet.js`:
+To get started, paste the following placeholder code into your `MyWallet` class in `my-wallet.js`:
 
     owner() {
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -48,11 +48,27 @@ To get started, paste the following into your `MyWallet` class in `my-wallet.js`
 
 ## The owner() method
 
-First we'll implement, and test, the `owner()` method. The general idea of this method is to return an *address* that is 100% unique for the app. No other app should share this address, and this address should not be used for anything else. The `owner()` method tells Run and the app which *address* should be used to assign as the owner for new jigs. See, when apps call `new Dragon()`, the dragon initially doesn't have an owner. This is assigned by Run, and provided by the `Owner API`.
+First we'll implement the `owner()` method. Your mission is to **provide a address that is fixed and unique for each app**. Let's break this down:
 
-Each app should have its own unique private key and address. The private key should live securely in the wallet. We don't want to mix jig outputs with payment outputs, and we also don't to mix jigs between different apps. However, unlike payment wallets, in jig wallets it's OK for each app to have a fixed private key and address that doesn't change. Jigs are non-fungible by design and have inherently less privacy than payments.
+> *provide an address*
 
-So all we have to do is return an address, right? Yes! The challenge is how to derive a unique key for each app. If your wallet already handles user authentication for the app by providing a Login API, then chances are high that you already have a unique identifer for each application. Otherwise, apps may provide a unique string that identifies themselves when they create your adapter. Either way, this application identifier string can be used to derive a unique private key from the wallet's master key. Here is one approach:
+Why an address? Because the app and Run should not see the private keys! Key management is the responsibility of the wallet, but Run still needs a way to identifier owners, so we provide an address instead. In a sense, the wallet *is* the private key.
+
+> *that is fixed*
+
+The address and private key should not change each time. Why fixed? This lets the app load the same jigs every time, but also, the privacy model for jigs is fundamentally different from payments. Jigs are non-fungible by design. Because they cannot be mixed with each other like Bitcoin outputs can, they inherently have less privacy. And that's OK! So, by returning a fixed address, syncs can be simpler and faster, and we don't present the app with an illusion of privacy that doesn't exist.
+
+> *and unique for each app*
+
+The `owner` address should not be shared between apps. Why not? Well, you may not break anything, but Run thinks it's important for apps to have its own room to operate in. When the apps calls `run.sync()`, run load every jig assigned to the `owner()` address, and if this returns other application's jigs, this will slow down the app and create risks that apps will alter each other's data. We don't want that!
+
+### Deriving the private key
+
+In the wallet, we'll want to derive a private key and send its address to the adapter. This key needs to be unique for each app, so your first step is to distinguish between apps.
+
+If your wallet already handles user authentication with a Login API, then chances are that you already have a unique app identifer. If you don't have a Login API however, you'll want apps to provide their own unique identifier when the adapter is created. This application identifier can be used to derive a unique private key from the wallet's master key.
+
+Here is one approach:
 
 ```
 function deriveApplicationKey(masterKey, appIdentifier) {
@@ -68,18 +84,19 @@ function deriveApplicationKey(masterKey, appIdentifier) {
 }
 ```
 
-If applications pass an app identifier themselves, you may find it useful to create an `async connect(appId)` method that connects to your wallet and gets the owner address.
+You may find it useful to create an `async connect(app)` method that connects to your wallet and calculates the owner address.
 
 ```
-const wallet = await MyWallet.connect('<my game name>')
-
-console.log(wallet.owner())
+const wallet = await MyWallet.connect('<my-app-name>')
 ```
 
 > **Note**: In the future, `owner()` will be `async`. In 0.5 however it is not. 
 
-Go ahead and implement the `owner()` method now, having it return a unique address for the application. Then, let's give it a test. Paste this code into your test runner:
+Go ahead and implement the `owner()` method.
 
+### Testing owner()
+
+Now, let's give it a shot. Paste this code into your `test.html`:
 
 ```
 const run = new Run({ wallet: new MyWallet(), network: 'main' })
@@ -93,7 +110,9 @@ await run.sync()
 console.log('dragon.owner:', dragon.owner)
 ```
 
-Creating jigs doesn't require any owner signatures! Open `test.html` in your browser and then check the web console. If you see `dragon.owner` is your address, congratulations! That was the hard part. Let's finish the Owner API by implementing the `sign()` method.
+Run will call your `owner()` method when the `new Dragon()` line is called. The value returned will be assigned as `dragon.owner.` New jigs don't require any signatures so we can test this before the `sign()` method is implemented.
+
+Open `test.html` in your browser and then check the web console. If you see `dragon.owner` is your address, congratulations! You've just completed the hard part. Let's finish the Owner API by implementing the `sign()` method.
 
 ## The sign() method
 

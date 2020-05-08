@@ -131,7 +131,7 @@ class Sword extends Jig {
 
 const sword = new Sword()
 
-sword.update()
+sword.upgrade()
 
 await run.sync()
 ```

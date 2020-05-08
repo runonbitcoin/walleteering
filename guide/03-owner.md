@@ -20,7 +20,7 @@ Here is Run's `Owner API`:
         async sign(txhex: string, locks: Array<Lock>)
     }
 
-This is what we'll implement on our wallet. Our wallet will implement both the `Purse` and the `Owner` APIs at the same time. Users may pass your wallet as both the `owner` and the `purse`, or they may pass it as a `wallet` which is shorthand for both.
+This is what we'll implement. Our wallet will implement both the `Purse` and the `Owner` APIs at the same time. Users may pass your wallet as both the `owner` and the `purse`, or they may pass it as a `wallet` which is shorthand for both.
 
     const run = new Run({ owner: myWallet, purse: myWallet })
 
@@ -48,7 +48,7 @@ To get started, paste the following placeholder code into your `MyWallet` class 
 
 ## The owner() method
 
-First we'll implement the `owner()` method. Your mission is to **provide a address that is fixed and unique for each app**. Run will use this address to assign new jigs. Let's break it down:
+First, we'll implement the `owner()` method. Your mission is to **provide an address that is fixed and unique for each app**. Run will use this address to assign new jigs. Let's break it down:
 
 > *provide an address*
 
@@ -56,11 +56,11 @@ Why an address? Because the app and Run should not see the wallet's private keys
 
 > *that is fixed*
 
-The address returned should always be same for a given app. This allows the app to persist its data to bitcoin because the same jigs will be there next time. However, it's worth dwelling on privacy. Jigs are non-fungible by design. This means unlike Bitcoin, whose outputs can be combined and split at will, jigs have inherently less privacy. By starting with a single address each app is simpler, faster, and doesn't present the app with an illusion of privacy that doesn't exist. [Chapter 4](04-advanced.md) discusses this more.
+The address returned should always be the same for a given app. This allows the app to persist its data to bitcoin because the same jigs will be there next time. However, it's worth dwelling on privacy. Jigs are non-fungible by design. This means unlike Bitcoin, whose outputs can be combined and split at will, jigs have inherently less privacy. By starting with a single address each app is simpler, faster, and doesn't present the app with an illusion of privacy that doesn't exist. [Chapter 4](04-advanced.md) discusses this more.
 
 > *and unique for each app*
 
-The owner address should be different for every app. Why? it's important for apps to have their own rooms to operate in. When an apps calls `run.sync()`, Run loads every jig assigned to the `owner()` address. If the owner address were shared between apps, then not only will slow down each app but it creates risks that apps will change each other's data. We don't want that!
+The owner address should be different for every app. Why? it's important for apps to have their own rooms to operate in. When an app calls `run.sync()`, Run loads every jig assigned to the `owner()` address. If the owner address were shared between apps, then not only will slow down each app but it creates risks that apps will change each other's data. We don't want that!
 
 ### Deriving the private key
 
@@ -110,13 +110,13 @@ await run.sync()
 console.log('dragon.owner:', dragon.owner)
 ```
 
-Run calls your `owner()` method during `new Dragon()`. The value you return will be assigned as `dragon.owner.` If you're wondering, the reason we can test this before `sign()` is implemented is because new jigs don't require signatures.
+Run calls your `owner()` method during `new Dragon()`. The value you return will be assigned as `dragon.owner.` If you're wondering, the reason we can test `owner()` before `sign()` is implemented is because new jigs don't require signatures.
 
 Open `test.html` in your browser and then check the web console. If you see `dragon.owner` set to your app's address, congratulations! You've just completed the most difficult part. Let's finish the `Owner API` by implementing the `sign()` method.
 
 ## The sign() method
 
-When a jig is updated, Run builds a transaction that spends its UTXO. These inputs need to be signed, so Run then calls the `sign()` method. You'll want to sign the transaction similarly to the `pay()` method in the purse. You'll send the transaction to the wallet, the wallet will sign it, and the transaction will be returned back to your adapter and then to Run.
+When a jig is updated, Run builds a transaction that spends its UTXO. These inputs need to be signed, so Run then calls the `sign()` method. You'll want to sign the transaction similar to the `pay()` method in the purse. You'll send the transaction to the wallet, the wallet will sign it, and the transaction will be returned back to your adapter and then to Run.
 
 For a first implementation, simply sign all inputs you are able to. The `bsv` library can do this by calling `tx.sign(appPrivateKey)`. You may want to offer the option of prompting the user for each action. This minimizes the ability for an app to take actions on the user's behalf. We'll cover how to make sense of Run transactions in Chapter 4. You may also want to limit signing to only Run transactions as covered in Chapter 2.
 
@@ -148,9 +148,9 @@ Make sure all tests pass before moving on.
 
 ## Where to go from here?
 
-Nice work! You're basically done now. We'll cover a few more topics in [Chapter 4: Advanced Considerations](04-advanced.md), but app developers are almost ready to use your wallet.
+Nice work! You're almost done. We'll cover a few more topics in [Chapter 4: Advanced Considerations](04-advanced.md), but app developers can already start trying your new adapter.
 
-Here are a few additional things to try:
+Here are some additional things to try:
 
 * Ensure your wallet generates unique owners for each app with tests
 * Document your wallet adapter's security model and threats

@@ -17,3 +17,6 @@ TODO
 * Reach out to apps for integration
 * Publish the source code on GitHub
 * Prepare your wallet for a wave of new apps
+* Multiple addresses
+
+It's probably OK to share a single address for all jigs in an app, and this is even desirable in cases. Sure, sometimes a user will not want to reveal that they own a particular jig, for example a rare weapon in a game, but these are special cases.

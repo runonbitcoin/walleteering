@@ -48,32 +48,32 @@ To get started, paste the following placeholder code into your `MyWallet` class 
 
 ## The owner() method
 
-First we'll implement the `owner()` method. Your mission is to **provide a address that is fixed and unique for each app**. Let's break this down:
+First we'll implement the `owner()` method. Your mission is to **provide a address that is fixed and unique for each app**. Run will use this address to assign new jigs. Let's break it down:
 
 > *provide an address*
 
-Why an address? Because the app and Run should not see the private keys! Key management is the responsibility of the wallet, but Run still needs a way to identifier owners, so we provide an address instead. In a sense, the wallet *is* the private key.
+Why an address? Because the app and Run should not see the wallet's private keys! Key management is a wallet's expertise. Run only needs a way to assign owners to new jigs. In a sense, the wallet *is* the private key. Now it's possible and sometimes useful for the `owner()` method to return a public key or a `Lock` instead, but these are advanced topics covered for [Chapter 4](04-advanced.md).
 
 > *that is fixed*
 
-The address and private key should not change each time. Why fixed? This lets the app load the same jigs every time, but also, the privacy model for jigs is fundamentally different from payments. Jigs are non-fungible by design. Because they cannot be mixed with each other like Bitcoin outputs can, they inherently have less privacy. And that's OK! So, by returning a fixed address, syncs can be simpler and faster, and we don't present the app with an illusion of privacy that doesn't exist.
+The address returned should always be same for a given app. This allows the app to persist its data to bitcoin because the same jigs will be there next time. However, it's worth dwelling on privacy. Jigs are non-fungible by design. This means unlike Bitcoin, whose outputs can be combined and split at will, jigs have inherently less privacy. By starting with a single address each app is simpler, faster, and doesn't present the app with an illusion of privacy that doesn't exist. [Chapter 4](04-advanced.md) discusses this more.
 
 > *and unique for each app*
 
-The `owner` address should not be shared between apps. Why not? Well, you may not break anything, but Run thinks it's important for apps to have its own room to operate in. When the apps calls `run.sync()`, run load every jig assigned to the `owner()` address, and if this returns other application's jigs, this will slow down the app and create risks that apps will alter each other's data. We don't want that!
+The owner address should be different for every app. Why? it's important for apps to have their own rooms to operate in. When an apps calls `run.sync()`, Run loads every jig assigned to the `owner()` address. If the owner address were shared between apps, then not only will slow down each app but it creates risks that apps will change each other's data. We don't want that!
 
 ### Deriving the private key
 
-In the wallet, we'll want to derive a private key and send its address to the adapter. This key needs to be unique for each app, so your first step is to distinguish between apps.
+The first step to providing an address is to generate a private key! In the wallet, we'll derive a private key and send its address to the wallet adapter. This key needs to be unique for each app, so your wallet needs a way to distinguish between apps.
 
-If your wallet already handles user authentication with a Login API, then chances are that you already have a unique app identifer. If you don't have a Login API however, you'll want apps to provide their own unique identifier when the adapter is created. This application identifier can be used to derive a unique private key from the wallet's master key.
+Perhaps your wallet already handles app authentication with a Login API. If so, then chances are that you already have a unique string for each app. If not, then apps should provide to you a unique identifier when they create your adapter. This app identifier should be used to derive a unique private key from the wallet's master key.
 
-Here is one approach:
+There are many possible approaches. Here is one:
 
 ```
 function deriveApplicationKey(masterKey, appIdentifier) {
     // Start at a unique key for all application jigs
-    const baseKey = masterKey.derive('m/123/456/789')
+    const baseKey = masterKey.derive('m/123/456')
     let appKey = baseKey
 
     for (let i = 0; i < appIdentifier.length; i++) {
@@ -84,19 +84,19 @@ function deriveApplicationKey(masterKey, appIdentifier) {
 }
 ```
 
-You may find it useful to create an `async connect(app)` method that connects to your wallet and calculates the owner address.
+You may find it useful to create an `async connect(app)` method that connects to your wallet and calculates the owner address before the wallet is even passed into Run. For example:
 
 ```
 const wallet = await MyWallet.connect('<my-app-name>')
 ```
 
-> **Note**: In the future, `owner()` will be `async`. In 0.5 however it is not. 
+> **Note**: In 0.5, the `owner()` method is syncronous, so if it relies on any communication with the wallet, that will likely have to be done in a separate async method like `connect()` above. In the future, `owner()` will be async.
 
-Go ahead and implement the `owner()` method.
+Now you're set. Go ahead and implement the `owner()` method and come back when you're ready to test it.
 
 ### Testing owner()
 
-Now, let's give it a shot. Paste this code into your `test.html`:
+Let's give it a shot. Paste this code into `test.html`:
 
 ```
 const run = new Run({ wallet: new MyWallet(), network: 'main' })
@@ -110,39 +110,37 @@ await run.sync()
 console.log('dragon.owner:', dragon.owner)
 ```
 
-Run will call your `owner()` method when the `new Dragon()` line is called. The value returned will be assigned as `dragon.owner.` New jigs don't require any signatures so we can test this before the `sign()` method is implemented.
+Run calls your `owner()` method during `new Dragon()`. The value you return will be assigned as `dragon.owner.` If you're wondering, the reason we can test this before `sign()` is implemented is because new jigs don't require signatures.
 
-Open `test.html` in your browser and then check the web console. If you see `dragon.owner` is your address, congratulations! You've just completed the hard part. Let's finish the Owner API by implementing the `sign()` method.
+Open `test.html` in your browser and then check the web console. If you see `dragon.owner` set to your app's address, congratulations! You've just completed the most difficult part. Let's finish the `Owner API` by implementing the `sign()` method.
 
 ## The sign() method
 
-The `sign()` method is called by Run when there are jig inputs in a transaction. Run builds a transaction that spends a jig UTXO whenever that jig is updated. However, it doesn't have the private key to sign it! You'll want to sign the transaction similar to the `pay()` method in the purse. You'll send the transaction hex to the wallet, the wallet will sign it, and the transaction will be returned back to your adapter and then to Run.
+When a jig is updated, Run builds a transaction that spends its UTXO. These inputs need to be signed, so Run then calls the `sign()` method. You'll want to sign the transaction similarly to the `pay()` method in the purse. You'll send the transaction to the wallet, the wallet will sign it, and the transaction will be returned back to your adapter and then to Run.
 
-The simplest approach to sign is to sign all inputs it is able to! The `bsv` library will do this by calling `tx.sign(appPrivateKey)`. We recommend starting by implementing `sign()` this way, and then only later optimize it to sign just the inputs required.
+For a first implementation, simply sign all inputs you are able to. The `bsv` library can do this by calling `tx.sign(appPrivateKey)`. You may want to offer the option of prompting the user for each action. This minimizes the ability for an app to take actions on the user's behalf. We'll cover how to make sense of Run transactions in Chapter 4. You may also want to limit signing to only Run transactions as covered in Chapter 2.
 
-You may also prompt the user if they would like to sign for particular updates to jigs. We'll cover how to make sense of the actions in the next Chapter. You may also want to limit signing to only Run transactions. See the previous Chapter for that.
-
-When you're ready to test, paste this code into your `test.html` file and see if it works:
+When you're ready, paste this code into `test.html`:
 
 ```
 const run = new Run({ wallet: new MyWallet(), network: 'main' })
 
-class Store extends Jig {
-    set (value) { this.value = value }
+class Sword extends Jig {
+    upgrade() { this.upgraded = true }
 }
 
-const store = new Store()
+const sword = new Sword()
 
-store.set(1)
+sword.update()
 
-await store.sync()
+await run.sync()
 ```
 
-If this method succeeds, congratulations! Your wallet is not signing jig transactions.
+If this method succeeds, congratulations! Your wallet is now signing jig transactions.
 
 ## Testing your owner
 
-Like the `Purse API`, run provides a small set of sets in the `tests` directory for the owner. Go ahead and open `owner-tests.js` and examine its contents. Then, add the following line to your `test.html`:
+Similar to the purse, run provides a small set of *owner* tests in the `tests` directory. Open `owner-tests.js` and examine its contents. Then, add the following line to your `test.html`:
 
     await ownerTests(run)
     
@@ -150,11 +148,11 @@ Make sure all tests pass before moving on.
 
 ## Where to go from here?
 
-Way to go! At this point, you are basically done. We'll cover a few more topics in [Chapter 4: Advanced Considerations](04-advanced.md), but you're wallet adapter is working and that's what matters!
+Nice work! You're basically done now. We'll cover a few more topics in [Chapter 4: Advanced Considerations](04-advanced.md), but app developers are almost ready to use your wallet.
 
-For curious minds, here are a few additional things to do:
+Here are a few additional things to try:
 
-* Test your wallet generates unique owners for each app
+* Ensure your wallet generates unique owners for each app with tests
 * Document your wallet adapter's security model and threats
 * Read about Locks in the Run documentation
 * Look at the owner implementation in the demo project

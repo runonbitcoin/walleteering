@@ -96,7 +96,7 @@ Other wallet backends require different yet similar code to send and receive the
 
 Once you have two-way communication set up, test it by logging calls both in application space and wallet space.
 
-## Paying for a transaction
+### Paying for a transaction
 
 It is likely that your wallet already has a method to pay for a transaction, so we won't dwell on the details. A general strategy is:
 
@@ -119,7 +119,7 @@ The inputs of the transaction will also have their unlocking scripts set to dumm
 
 At this point, you should have two-way communication and a payment working. It is now time to open `test.html` again and see if your purse works! Using the dragon code from before, if your purse works, there should be no errors and you should be able to see the transaction on a blockchain.
 
-To test your wallet in different scenarioes, we provide a small set of tests in the `tests` directory of this project. Go ahead and open `purse-tests.js` and copy the contents into `test.html`. Then run the tests via
+To test your wallet in different scenarioes, we provide a small set of tests in the `tests` directory of this project. Go ahead and open `purse-tests.js` and examine its contents. This file is linked in your tests too, so once you're ready, add the following line to `test.html`:
 
     await purseTests(run, { supportsBackedJigs: false })
     
@@ -127,7 +127,7 @@ Make sure all tests pass before moving on. Congratulations, you've now implement
 
 ## Securing your wallet
 
-In theory, anyone is able to call `run.purse.pay()` and use your purse to pay for any transaction, not just a Run transaction. This might actually be OK depending on your wallet, but if you'd like to restrict the wallet adapter to only Run transactions, this is easy. An Run protocol always has a OP_RETURN output as its first output, and the contents of the script will always begins with `OP_FALSE OP_RETURN "run"`, or 006a0372756e in hex. Here's code using the `bsv` library:
+In theory, anyone is able to call `run.purse.pay()` and use your purse to pay for any transaction, not just a Run transaction. This might actually be OK depending on your wallet, but if you'd like to restrict the wallet adapter to only Run transactions, this is easy. A Run transaction always has an OP_RETURN output as its first output, and the contents of the script will always begins with `OP_FALSE OP_RETURN "run"`, or 006a0372756e in hex. Here's code using the `bsv` library:
 
 ```
 const isRunTransaction =
@@ -152,9 +152,9 @@ Finally, Run works in both the browser and node. If your wallet also supports bo
 
 Congratulations! Feel free to share your wallet with developers. I'm sure even just having purse functionality will be helpful. Hopefully this tutorial also made your wallet more flexible for future APIs too. When you're ready, let's continue on to [Chapter 3: Implementing Owner](03-owner.md).
 
-For some extra credit:
+For some extra challenges:
 
-- Create a minified build for the browser
-- Automate testing of your wallet adapter
-- Read about *Backed Jigs* in the Run documentation
-- Look at the purse implementation in the demo project
+* Create a minified build for the browser
+* Automate testing of your wallet adapter
+* Read about *Backed Jigs* in the Run documentation
+* Look at the purse implementation in the demo project

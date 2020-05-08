@@ -7,7 +7,7 @@
  * 
  *      Copy this function into a browser or node script. Then:
  * 
- *      const wallet = new CustomWallet()
+ *      const wallet = new MyWallet()
  *      const run = new Run({ wallet })
  *      purseTests(run, false)
  * 

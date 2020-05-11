@@ -23,7 +23,7 @@ In [Chapter 3](03-owner.md), we wrote that the `owner()` method should return an
 
 ## Increasing privacy
 
-While jigs are inherently non-fungible, sometimes it's still important to hide the fact that a single user owns two different jigs. For example, perhaps it would be advantageous not to make obvious that you own a rare weapon in a game to your opponents. We consider this an advanced privacy mode, because it is unlikely to be the default privacy model, but if you would like to support this, you can return an array of owners from `owner()`. Run will use the first one in the list to assign to new resources. Your `sign()` method should be able to sign any owner previously returned.
+While jigs are inherently non-fungible, sometimes it's important to hide the fact that a single user owns two different jigs. For example, perhaps it would be advantageous not to make obvious that you own a rare weapon in a game to your opponents. We consider this enhanced privacy, because it is unlikely to be the default privacy model, but if you would like to support this, you can return an array of owners from `owner()`. Run will use the first one in the list to assign to new resources. Your `sign()` method should be able to sign any owner previously returned.
 
 ## Parsing Run actions
 

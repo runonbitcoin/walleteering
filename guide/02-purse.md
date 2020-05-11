@@ -24,7 +24,7 @@ Begin by opening the `starter` project in this repository. It contains two files
 * `my-wallet.js` - Wallet adapter class that we'll fill in
 * `test.html` - Webpage that tests the wallet adapter
 
-The wallet adapter is designed for a *browser* wallet. If your wallet works on a backend such as Node, go ahead now and convert this template project to suit your wallet.
+The wallet adapter is designed for a *browser* wallet. If your wallet is designed for a node server, go ahead now and convert this template project to suit your wallet.
 
 Inside `my-wallet.js`, you'll find this placeholder:
 
@@ -80,13 +80,13 @@ and converting it back to hex again via
 
     tx.toString('hex')
 
-The second parameter, `spent`, and is the total amount of satoshis spent as inputs of the transaction. Output amounts are part of every Bitcoin transaction, but input amounts are not. You may find this value helpful when calculating the miner fee. Finally, the return value for `pay()` should be the paid transaction in hex format.
+The second parameter, `spent`, is the total amount of satoshis spent as inputs in the transaction. Output amounts are part of every Bitcoin transaction, but input amounts are not. You may find this value helpful when calculating the miner fee. Finally, the return value for `pay()` should be the paid transaction in hex format.
 
 To implement `pay()`, the first step is to establish a two-way connection between your adapter and your wallet.
 
 ### Setting up two-way communication
 
-While in theory we could add every input and signature within the adapter's `pay()` method, to hide private keys and other secrets, it's better if signing instead happens in the wallet. That way the application never has a chance to see the user's private keys. Wallets come in many forms, so communication will be unique to your wallet. Your wallet may be an `iframe`, a web server, a browser extension, or even a hardware device. But regardless of the approach, this communication is likely to be asyncronous, so you'll notice the `pay()` method is also async.
+While in theory we could add every input and sign the transaction inside the adapter's `pay()` method, to hide private keys and other secrets, it's better if signing instead happens in the wallet. That way the application never has a chance to see the user's private keys. Wallets come in many forms, so communication will be unique to your wallet. Your wallet may be an `iframe`, a web server, a browser extension, or even a hardware device. But regardless of the approach, this communication is likely to be asyncronous, so you'll notice the `pay()` method is also async.
 
 ![Communication Flow](assets/communication_flow.png)
 
@@ -119,7 +119,7 @@ Once you have two-way communication and payments working, continue to the next s
 
 ## Testing your purse
 
-It is now time to open `test.html` again and see if your purse works! Using the dragon code from earlier, if your purse works, there should be no errors and you should be able to see the transaction on a blockchain.
+It is now time to open `test.html` again and see if your purse works. Using the dragon code from earlier, if your purse works, there should be no errors and you should be able to see the transaction on a blockchain.
 
 To test your wallet in different scenarios, we provide a small set of tests in the `tests` directory of this project. Go ahead and open `purse-tests.js` and examine its contents. This file is linked in your tests too, so once you're ready, add the following line to `test.html`:
 
@@ -146,13 +146,13 @@ Last, it is important to authenticate the application to the wallet. Users may l
 
 If your wallet performs any network calls, consider adding retries and timeouts, because if the purse fails to pay for a transaction, then jigs will be rolled back. While application developers are expected to plan for this, you can minimize the chances of it happening by improving your wallet's robustness. Run will wait forever if necessary when calling your purse, so a robust implementation is in your hands.
 
-Many wallets only work on mainnet. It is a good idea to ask the user to specify which network to use when creating the wallet because this ensures they don't accidentally use the wallet on the wrong network. The only other way to differentiate between mainnet and testnet transactions is by querying its inputs.
+Many wallets only work on mainnet. It is a good idea to ask the user to specify which network to use when creating the wallet because this ensures they don't accidentally use the wallet on the wrong network. The only other way to differentiate between mainnet and testnet transactions is by querying the inputs, but there may not always be one.
 
 Finally, Run works in both the browser and node. If your wallet also supports both, now would be a good time to add a build tool like `webpack` or `rollup` to build your adapter in both environments. Be sure to test both too!
 
 ## Where to go from here?
 
-Congratulations! Feel free to share your purse with developers already. I'm sure even just having purse functionality will be helpful. When you're ready, continue on to [Chapter 3: Implementing Owner](03-owner.md).
+Congratulations! Feel free to share your purse with developers. Even without the `Owner API`, the ability for your wallet to pay for Run transactions is likely to be useful. When you're ready, continue on to [Chapter 3: Implementing Owner](03-owner.md).
 
 For some extra challenges:
 

@@ -3,8 +3,8 @@
  */
 
 class MyWallet {
-    pay(txhex) {
-        const tx = new bsv.Transaction(txhex)
+    pay(rawtx, parents) {
+        const tx = new bsv.Transaction(rawtx)
 
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // TODO: Implement this section

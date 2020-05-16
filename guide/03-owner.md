@@ -17,7 +17,7 @@ Here is Run's `Owner API`:
 
     class Owner {
         owner(): string|Lock
-        async sign(txhex: string, locks: Array<Lock>)
+        async sign(rawtx: string, parents: Array<?{script: string, satoshis: number, lock: ?Lock}>)
     }
 
 This is what we'll implement. Our wallet will implement both the `Purse` and the `Owner` APIs at the same time. Users may pass your wallet as both the `owner` and the `purse`, or they may pass it as a `wallet` which is shorthand for both.
@@ -36,8 +36,8 @@ To get started, paste the following placeholder code into your `MyWallet` class 
         // <<<<<<<<<<<<<<<<<<<<<<<<<<<< 
     }
 
-    sign(txhex, locks) {
-        const tx = new bsv.Transaction(txhex)
+    sign(rawtx, parents) {
+        const tx = new bsv.Transaction(rawtx)
 
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // TODO: Implement this section

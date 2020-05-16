@@ -7,8 +7,8 @@ In this chapter, you'll implement the `Purse API`. You'll create a wallet adapte
 Here is Run's `Purse API`:
 
     class Purse {
-        async pay(txhex: string, spent: number) : string
-        async broadcast(txhex: string)
+        async pay(rawtx: string, parents: Array<{script, satoshis}>) : string
+        async broadcast(rawtx: string)
     }
 
 This is what you'll be implementing. Users will pass your wallet adapter as the purse when creating run:
@@ -30,8 +30,8 @@ Inside `my-wallet.js`, you'll find this placeholder:
 
 ```
 class MyWallet {
-    pay(txhex, spent) {
-        const tx = new bsv.Transaction(txhex)
+    pay(rawtx, parents) {
+        const tx = new bsv.Transaction(rawtx)
 
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // TODO: Implement this section
@@ -70,17 +70,17 @@ But uh oh. We have an error: `Error: Broadcast failed: tx has no inputs`. To get
 
 ## The pay() method
 
-The job of the `pay()` method is to make the transaction acceptable to miners. It adds inputs and outputs to raise its fee and then signs the transaction. There are two parameters passed to `pay()`, `txhex` and `spent`. 
+The job of the `pay()` method is to make the transaction acceptable to miners. It adds inputs and outputs to raise its fee and then signs the transaction. There are two parameters passed to `pay()`, `rawtx` and `parents`. 
 
-`txhex` is the partial transaction that Run builds. You should first inflate this transaction into an object to add additional inputs and outputs. The [bsv library](https://github.com/moneybutton/bsv), while optional, is capable of inflating the hex transaction via
+`rawtx` is the partial transaction that Run builds. You should first inflate this transaction into an object to add additional inputs and outputs. The [bsv library](https://github.com/moneybutton/bsv), while optional, is capable of inflating the hex transaction via
 
-    new bsv.Transaction(txhex)
+    new bsv.Transaction(rawtx)
 
 and converting it back to hex again via
 
     tx.toString('hex')
 
-The second parameter, `spent`, is the total amount of satoshis spent as inputs in the transaction. Output amounts are part of every Bitcoin transaction, but input amounts are not. You may find this value helpful when calculating the miner fee. Finally, the return value for `pay()` should be the paid transaction in hex format.
+The second parameter, `parents`, are the outputs that are being spent in this transaction. Among other reasons, you can use this to calculate the total amount of satoshis spent as inputs in the transaction, which may be helpful when calculating the miner fee. Output amounts are part of every Bitcoin transaction, but input amounts are not. Finally, the return value for `pay()` should be the paid transaction in hex format.
 
 To implement `pay()`, the first step is to establish a two-way connection between your adapter and your wallet.
 
@@ -107,6 +107,7 @@ It is likely that your wallet already has a method to pay for a transaction, so 
 
 Calculating the miner fee *is* worth dwelling on though. The partial transaction passed to `pay()` will already have inputs and outputs. Run supports a feature called **backed jigs** which are tokens backed by an amount of BSV in their UTXOs. These backed jigs may be outputs, inputs, or both, so wallets should not assume that all inputs and outputs are dust. In fact, this assumption is likely to lead to bugs. To keep things simple, we recommend that your first adapter not support backed jigs at all. You can check for backed jigs via:
 
+    const spent = parents.reduce((sum, parent) => sum + parent.satoshis, 0)
     const hasNonDustInputs = spent / tx.inputs.length > 546
     const hasNonDustOutputs = tx.outputs.some(output => output.satoshis > 546)
     const hasBackedJigs = hasNonDustInputs || hasNonDustOutputs

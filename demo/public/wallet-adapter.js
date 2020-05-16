@@ -8,62 +8,61 @@ class ThirdPartyWallet {
      * Creates the ThirdPartyWallet
      */
     static async connect() {
-        const addresses = await fetch('/addresses').then(r => r.json())
+        const ownerAddress = await fetch('/owner').then(r => r.text())
 
-        return new ThirdPartyWallet(addresses.purse, addresses.owner)
+        return new ThirdPartyWallet(ownerAddress)
     }
 
     /**
      * Gets the address assigned as the owner of new jigs
      */
-    get owner () { return this.ownerAddress }
+    owner () { return this.ownerAddress }
 
     /**
      * Adds the necessary inputs and outputs to pay for a transaction
      * 
      * We also sign payment inputs in this method.
      */
-    async pay (txhex) {
+    async pay (rawtx, parents) {
         console.log('paying')
 
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: txhex
+            body: JSON.stringify({ rawtx, parents })
         }
 
-        const json = await fetch('/pay', options).then(r => r.json())
+        const { rawtx: paid } = await fetch('/pay', options).then(r => r.json())
 
-        return new bsv.Transaction(json)
+        return new bsv.Transaction(paid)
     }
 
     /**
      * Signs owner inputs
      */
-    async sign (txhex, locks) {
+    async sign (rawtx, parents) {
         console.log('signing')
 
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: txhex
+            body: JSON.stringify({ rawtx, parents })
         }
 
-        const json = await fetch('/unlock', options).then(r => r.json())
+        const { rawtx: signed } = await fetch('/sign', options).then(r => r.json())
 
-        return new bsv.Transaction(json)
+        return new bsv.Transaction(signed)
     }
 
     /**
      * Notifies us when the tx we signed is broadcast. Might need to update the wallet utxos.
      */
-    async broadcast(txhex) {
+    async broadcast(rawtx) {
         console.log('broadcasting')
     }
 
     // Private constructor. User should call connect() instead.
-    constructor(purseAddress, ownerAddress) {
-        this.purseAddress = purseAddress
+    constructor(ownerAddress) {
         this.ownerAddress = ownerAddress
     }
 }

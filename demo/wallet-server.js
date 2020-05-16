@@ -14,23 +14,22 @@ app.use(express.json())
 
 // A real wallet would have more secure endpoints than this :)
 
-app.get('/addresses', (req, res) => {
-    res.send({
-        owner: run.owner.bsvPrivateKey.toAddress().toString(),
-        purse: run.purse.bsvPrivateKey.toAddress().toString(),
-    })
+app.get('/owner', (req, res) => {
+    res.send(owner.toAddress().toString())
 })
 
 app.post('/pay', async (req, res) => {
-    const tx = new bsv.Transaction(req.body)
-    const paid = await run.purse.pay(tx)
-    res.send(paid.toJSON())
+    const paid = await run.purse.pay(req.body.rawtx, req.body.parents)
+
+    res.send({ rawtx: paid })
 })
 
-app.post('/unlock', async (req, res) => {
-    const tx = new bsv.Transaction(req.body)
-    tx.sign(run.owner.bsvPrivateKey)
-    res.send(tx.toJSON())
+app.post('/sign', async (req, res) => {
+    const signed = await run.owner.sign(req.body.rawtx, req.body.parents)
+
+    res.send({ rawtx: signed })
+
+    const tx = new bsv.Transaction(signed)
 })
 
 app.listen(8080, () => {

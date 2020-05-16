@@ -5,6 +5,6 @@ Demo showing how a third-party wallet might be plugged into Run to (1) own jigs 
 ## Running the demo
 
 1. Start the wallet: `node .`
-2. Open the app: `https://localhost:8080/demo.html`
+2. Open the app: `https://localhost:8080`
 3. Type a name for your digital pet and click **Set Name**
 4. Click the TXID to verify it was created on a block explorer

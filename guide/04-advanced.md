@@ -19,7 +19,7 @@ When the user increases the satoshis value of a jig, the purse is expected to pa
 
 ## Custom locking scripts
 
-In [Chapter 3](03-owner.md), we wrote that the `owner()` method should return an address. This isn't strictly true. It's true that most wallets will choose to return a Bitcoin address, but this method supports returning any owner that is supported by Run, including public keys and `Locks`, which are custom locking scripts. Similarly, the `sign()` method is passed a list of parents, one for each input. Each jig parent will contain a `lock` that may be used to detect and sign custom locking scripts. If your wallet would like to implement this, the best place to start is by reading the `Locks` section of the Run documentation and *Example 8: Locks* in the SDK.
+In [Chapter 3](03-owner.md), we wrote that the `owner()` method should return an address. This isn't strictly true. It's true that most wallets will choose to return a Bitcoin address, but this method supports returning any owner that is supported by Run, including public keys and `Locks`, which are custom locking scripts. Similarly, the `sign()` method is passed a list of locks, one for each input. Each jig input will contain a lock that may be used to detect and sign custom locking scripts. If your wallet would like to implement this, the best place to start is by reading the `Locks` section of the Run documentation and *Example 8: Locks* in the SDK.
 
 ## Increasing privacy
 

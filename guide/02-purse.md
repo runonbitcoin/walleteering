@@ -7,7 +7,7 @@ In this chapter, you'll implement the `Purse API`. You'll create a wallet adapte
 Here is Run's `Purse API`:
 
     class Purse {
-        async pay(rawtx: string, parents: Array<{script, satoshis}>) : string
+        async pay(rawtx: string, parents: Array<{satoshis, script}>) : string
         async broadcast(rawtx: string)
     }
 

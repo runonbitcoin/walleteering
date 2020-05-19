@@ -40,7 +40,7 @@ class ThirdPartyWallet {
     /**
      * Signs owner inputs
      */
-    async sign (rawtx, parents) {
+    async sign (rawtx, parents, locks) {
         console.log('signing')
 
         const options = {

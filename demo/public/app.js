@@ -7,7 +7,7 @@ let run = null
 let dragon = null
 
 async function setup () {
-    wallet = await ThirdPartyWallet.connect()
+    wallet = new ThirdPartyWallet()
 
     // The wallet option is shorthand for passing both owner and purse
     run = new Run({ network: 'test', wallet })

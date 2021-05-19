@@ -5,18 +5,11 @@
  */
 class ThirdPartyWallet {
     /**
-     * Creates the ThirdPartyWallet
-     */
-    static async connect() {
-        const ownerAddress = await fetch('/owner').then(r => r.text())
-
-        return new ThirdPartyWallet(ownerAddress)
-    }
-
-    /**
      * Gets the address assigned as the owner of new jigs
      */
-    owner () { return this.ownerAddress }
+    async nextOwner () {
+        return await fetch('/owner').then(r => r.text())
+    }
 
     /**
      * Adds the necessary inputs and outputs to pay for a transaction
@@ -59,10 +52,5 @@ class ThirdPartyWallet {
      */
     async broadcast(rawtx) {
         console.log('broadcasting')
-    }
-
-    // Private constructor. User should call connect() instead.
-    constructor(ownerAddress) {
-        this.ownerAddress = ownerAddress
     }
 }

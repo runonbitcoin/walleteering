@@ -19,13 +19,13 @@ app.get('/owner', (req, res) => {
 })
 
 app.post('/pay', async (req, res) => {
-    const paid = await run.purse.pay(req.body.rawtx, req.body.parents)
+    const paid = await run.purse.pay(req.body.rawtx, req.body.parents, [])
 
     res.send({ rawtx: paid })
 })
 
 app.post('/sign', async (req, res) => {
-    const signed = await run.owner.sign(req.body.rawtx, req.body.parents)
+    const signed = await run.owner.sign(req.body.rawtx, req.body.parents, [])
 
     res.send({ rawtx: signed })
 

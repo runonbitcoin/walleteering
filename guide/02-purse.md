@@ -1,10 +1,10 @@
 # Chapter 2. Implementing Purse
 
-In this chapter, you'll implement the `Purse API`. You'll create a wallet adapter that calls your wallet and then you'll use it to pay for a few jigs. Make sure to read [Chapter 1](01-background.md) first to understand how `pay()` fits into Run's overall flow. Now let's get started.
+In this chapter, you'll implement the `Purse API`. You'll create a wallet adapter that calls your wallet and then you'll use it to pay for a few jigs. Make sure to read [Chapter 1](01-background.md) first to understand how `pay()` fits into RUN's overall flow. Now let's get started.
 
 ## The Purse API
 
-Here is Run's `Purse API`:
+Here is RUN's `Purse API`:
 
     class Purse {
         async pay(rawtx: string, parents: Array<{satoshis, script}>) : string
@@ -58,7 +58,7 @@ const dragon = new Dragon()
 await run.sync()
 ```
 
-This code creates a new instance of Run using our purse. Then, we create a new Dragon jig and `sync()` it to the mainnet blockchain. During `sync()`, Run produces a transaction that has one `OP_RETURN` and two resource outputs similar to our second example in [Chapter 1](01-background.md). Run then calls the `pay()` method, as well as the owner's `sign()` method, before broadcasting the transaction. We didn't specify an `owner` so one will be randomly generated.
+This code creates a new instance of RUN using our purse. Then, we create a new Dragon jig and `sync()` it to the mainnet blockchain. During `sync()`, RUN produces a transaction that has one `OP_RETURN` and two resource outputs similar to our second example in [Chapter 1](01-background.md). RUN then calls the `pay()` method, as well as the owner's `sign()` method, before broadcasting the transaction. We didn't specify an `owner` so one will be randomly generated.
 
 The time has come to try it. Open `test.html` in your favorite web browser and then open its web console. You should see two lines.
 
@@ -72,7 +72,7 @@ But uh oh. We have an error: `Error: Broadcast failed: tx has no inputs`. To get
 
 The job of the `pay()` method is to make the transaction acceptable to miners. It adds inputs and outputs to raise its fee and then signs the transaction. There are two parameters passed to `pay()`, `rawtx` and `parents`. 
 
-`rawtx` is the partial transaction that Run builds. You should first inflate this transaction into an object to add additional inputs and outputs. The [bsv library](https://github.com/moneybutton/bsv), while optional, is capable of inflating the hex transaction via
+`rawtx` is the partial transaction that RUN builds. You should first inflate this transaction into an object to add additional inputs and outputs. The [bsv library](https://github.com/moneybutton/bsv), while optional, is capable of inflating the hex transaction via
 
     new bsv.Transaction(rawtx)
 
@@ -90,7 +90,7 @@ While in theory we could add every input and sign the transaction inside the ada
 
 ![Communication Flow](assets/communication_flow.png)
 
-If your wallet runs in a hidden `iframe`, you may use [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to send the transaction to your wallet and `addEventListener` to capture it. Then, the wallet can pay for the transaction securely. After the transaction is paid, the wallet sends the transaction back to the adapter using `postMessage`, and the adapter receives it and returns it to Run. Data that crosses these boundaries will be serialized, so we recommend passing transactions in hex to be safe.
+If your wallet runs in a hidden `iframe`, you may use [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to send the transaction to your wallet and `addEventListener` to capture it. Then, the wallet can pay for the transaction securely. After the transaction is paid, the wallet sends the transaction back to the adapter using `postMessage`, and the adapter receives it and returns it to RUN. Data that crosses these boundaries will be serialized, so we recommend passing transactions in hex to be safe.
 
 Other wallet backends require different yet similar code to send and receive the transaction. You'll find an example of using `fetch()` to talk to an express server in the `demo` project.
 
@@ -105,7 +105,7 @@ It is likely that your wallet already has a method to pay for a transaction, so 
 3. Add a change output, returning all but the fee back to the purse
 4. Sign the new inputs added
 
-Calculating the miner fee *is* worth dwelling on though. The partial transaction passed to `pay()` will already have inputs and outputs. Run supports a feature called **backed jigs** which are tokens backed by an amount of BSV in their UTXOs. These backed jigs may be outputs, inputs, or both, so wallets should not assume that all inputs and outputs are dust. In fact, this assumption is likely to lead to bugs. To keep things simple, we recommend that your first adapter not support backed jigs at all. You can check for backed jigs via:
+Calculating the miner fee *is* worth dwelling on though. The partial transaction passed to `pay()` will already have inputs and outputs. RUN supports a feature called **backed jigs** which are tokens backed by an amount of BSV in their UTXOs. These backed jigs may be outputs, inputs, or both, so wallets should not assume that all inputs and outputs are dust. In fact, this assumption is likely to lead to bugs. To keep things simple, we recommend that your first adapter not support backed jigs at all. You can check for backed jigs via:
 
     const spent = parents.reduce((sum, parent) => sum + parent.satoshis, 0)
     const hasNonDustInputs = spent / tx.inputs.length > 546
@@ -130,34 +130,34 @@ Make sure all tests pass before moving on. Congratulations, you've now implement
 
 ## Securing your wallet
 
-Nothing prevents an app from calling `run.purse.pay()` to pay for arbitrary transactions that are unrelated to Run. This might actually be OK depending on your wallet's goals, but if you'd like to restrict the wallet adapter to only pay for Run transactions, this is easy. A Run transaction always has an OP_RETURN output as its first output, and the contents of its script will begin with `OP_FALSE OP_RETURN "run"`, or 006a0372756e in hex. Here's code to check for Run transactions using the `bsv` library:
+Nothing prevents an app from calling `run.purse.pay()` to pay for arbitrary transactions that are unrelated to RUNj. This might actually be OK depending on your wallet's goals, but if you'd like to restrict the wallet adapter to only pay for RUN transactions, this is easy. A RUN transaction always has an OP_RETURN output as its first output, and the contents of its script will begin with `OP_FALSE OP_RETURN "run"`, or 006a0372756e in hex. Here's code to check for RUN transactions using the `bsv` library:
 
 ```
-const isRunTransaction =
+const isRUNTransaction =
     tx.outputs.length &&
     tx.outputs[0].script.isSafeDataOut() &&
     tx.outputs[0].script.chunks[2].buf.toString('utf8') === 'run'
 ```
 
-It's also possible to use Run to generate very large data transactions. This may be OK as well, but consider setting a limit on the total amount spent per transaction or the total amount spent per app over some time period.
+It's also possible to use RUN to generate very large data transactions. This may be OK as well, but consider setting a limit on the total amount spent per transaction or the total amount spent per app over some time period.
 
 Last, it is important to authenticate the application to the wallet. Users may log in with your wallet using a password, or the app may authenticate itself with a token, but however this is done, take care to make sure it's an actual app calling the wallet and not malicious code.
 
 ## Productionization
 
-If your wallet performs any network calls, consider adding retries and timeouts, because if the purse fails to pay for a transaction, then jigs will be rolled back. While application developers are expected to plan for this, you can minimize the chances of it happening by improving your wallet's robustness. Run will wait forever if necessary when calling your purse, so a robust implementation is in your hands.
+If your wallet performs any network calls, consider adding retries and timeouts, because if the purse fails to pay for a transaction, then jigs will be rolled back. While application developers are expected to plan for this, you can minimize the chances of it happening by improving your wallet's robustness. RUN will wait forever if necessary when calling your purse, so a robust implementation is in your hands.
 
 Many wallets only work on mainnet. It is a good idea to ask the user to specify which network to use when creating the wallet because this ensures they don't accidentally use the wallet on the wrong network. The only other way to differentiate between mainnet and testnet transactions is by querying the inputs, but there may not always be one.
 
-Finally, Run works in both the browser and node. If your wallet also supports both, now would be a good time to add a build tool like `webpack` or `rollup` to build your adapter in both environments. Be sure to test both too!
+Finally, RUN works in both the browser and node. If your wallet also supports both, now would be a good time to add a build tool like `webpack` or `rollup` to build your adapter in both environments. Be sure to test both too!
 
 ## Where to go from here?
 
-Congratulations! Feel free to share your purse with developers. Even without the `Owner API`, the ability for your wallet to pay for Run transactions is likely to be useful. When you're ready, continue on to [Chapter 3: Implementing Owner](03-owner.md).
+Congratulations! Feel free to share your purse with developers. Even without the `Owner API`, the ability for your wallet to pay for RUN transactions is likely to be useful. When you're ready, continue on to [Chapter 3: Implementing Owner](03-owner.md).
 
 For some extra challenges:
 
 * Create a minified build for the browser
 * Automate testing of your wallet adapter
-* Read about *Backed Jigs* in the Run documentation
+* Read about *Backed Jigs* in the RUN documentation
 * Look at the purse implementation in the demo project

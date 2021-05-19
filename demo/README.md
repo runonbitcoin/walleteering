@@ -1,6 +1,6 @@
 ## About
 
-Demo showing how a third-party wallet might be plugged into Run to (1) own jigs and (2) pay for transactions. This is done by creating an adapter that implements Run's `Owner` and `Purse` APIs, which allows Run to talk to the wallet. This adapter object is passed as `wallet` when creating Run.
+Demo showing how a third-party wallet might be plugged into RUN to (1) own jigs and (2) pay for transactions. This is done by creating an adapter that implements RUN's `Owner` and `Purse` APIs, which allows RUN to talk to the wallet. This adapter object is passed as `wallet` when creating a `Run` instance.
 
 ## Running the demo
 

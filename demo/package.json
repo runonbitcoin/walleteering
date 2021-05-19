@@ -1,7 +1,7 @@
 {
   "name": "wallet",
   "version": "1.0.0",
-  "description": "Demo of using a third-party wallet in Run",
+  "description": "Demo of using a third-party wallet in RUN",
   "main": "wallet-server.js",
   "dependencies": {
     "express": "^4.17.1",

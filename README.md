@@ -1,6 +1,6 @@
 # Walleteering
 
-This project is designed to help third-party wallets integrate with Run.
+This project is designed to help third-party wallets integrate with RUN.
 
 To get started, run `npm install` and then head over to the [first tutorial](guide/01-background.md).
 

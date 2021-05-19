@@ -1,19 +1,19 @@
 # Chapter 3. Implementing Owner
 
-You may wonder how a wallet could be expected to manage items as diverse as tickets, social media posts, game items, digital pets, votes, rewards points, and more, each with their own challenges and user interfaces. Here's the good news: you won't have to! Run was built to cleanly separate the responsibilities of the wallet, Run, and apps. Broadly speaking:
+You may wonder how a wallet could be expected to manage items as diverse as tickets, social media posts, game items, digital pets, votes, rewards points, and more, each with their own challenges and user interfaces. Here's the good news: you won't have to! RUN was built to cleanly separate the responsibilities of the wallet, RUN, and apps. Broadly speaking:
 
-| Run | Wallet | App |
+| RUN | Wallet | App |
 | --- | ------ | --- |
 | Loading jigs and code | Securing keys and backup | Defining jigs |
 | Querying token UTXOs | Signing transactions | Creating jigs |
-| Building Run transactions | Authentication and login | Displaying jigs |
+| Building RUN transactions | Authentication and login | Displaying jigs |
 | Broadcasting transactions | Payments | Updating jigs |
 
 In this chapter, we'll learn about and implement the `Owner API`. This API provides an abstraction for your wallet to securely store an app's jigs and sign their transactions without needing to know all the details. 
 
 ## The Owner API
 
-Here is Run's `Owner API`:
+Here is RUN's `Owner API`:
 
     class Owner {
         async nextOwner(): string|Lock
@@ -48,11 +48,11 @@ To get started, paste the following placeholder code into your `MyWallet` class 
 
 ## The nextOwner() method
 
-First, we'll implement the `nextOwner()` method. Your goal is to **provide an address that is fixed and unique for each app**. Run will use this address to assign new jigs. Let's break it down:
+First, we'll implement the `nextOwner()` method. Your goal is to **provide an address that is fixed and unique for each app**. RUN will use this address to assign new jigs. Let's break it down:
 
 > *provide an address*
 
-Why an address? Because the app and Run should not see the wallet's private keys! Key management is a wallet's expertise. Run only needs a way to assign owners to new jigs. Although it's possible and sometimes useful for the `nextOwner()` method to return a public key or a `Lock` instead of an address, these are advanced topics covered for [Chapter 4](04-advanced.md).
+Why an address? Because the app and RUN should not see the wallet's private keys! Key management is a wallet's expertise. RUN only needs a way to assign owners to new jigs. Although it's possible and sometimes useful for the `nextOwner()` method to return a public key or a `Lock` instead of an address, these are advanced topics covered for [Chapter 4](04-advanced.md).
 
 > *that is fixed*
 
@@ -60,7 +60,7 @@ The address returned should always be the same for a given app. This allows the 
 
 > *and unique for each app*
 
-The owner address should be different for every app. It's important for apps to have their own space to operate in. When an app calls `run.sync()`, Run loads every jig assigned to the `nextOwner()` address. If the owner address were shared between apps, then not only will slow down each app but it creates risks that apps will change each other's data. We don't want that!
+The owner address should be different for every app. It's important for apps to have their own space to operate in. When an app calls `run.sync()`, RUN loads every jig assigned to the `nextOwner()` address. If the owner address were shared between apps, then not only will slow down each app but it creates risks that apps will change each other's data. We don't want that!
 
 ### Deriving the private key
 
@@ -104,15 +104,15 @@ await run.sync()
 console.log('dragon.owner:', dragon.owner)
 ```
 
-Run calls your `nextOwner()` method during `new Dragon()`. The value you return will be assigned as `dragon.owner.` If you're wondering, the reason we can test `nextOwner()` before `sign()` is implemented is because new jigs don't require signatures.
+RUN calls your `nextOwner()` method during `new Dragon()`. The value you return will be assigned as `dragon.owner.` If you're wondering, the reason we can test `nextOwner()` before `sign()` is implemented is because new jigs don't require signatures.
 
 Open `test.html` in your browser and then check the web console. If you see `dragon.owner` set to your app's address, congratulations! You've just completed the most difficult part. Let's finish the `Owner API` by implementing the `sign()` method.
 
 ## The sign() method
 
-When a jig is updated, Run builds a transaction that spends its UTXO. These inputs need to be signed, so Run then calls the `sign()` method. You'll want to sign the transaction similar to the `pay()` method in the purse. You'll send the transaction to the wallet, the wallet will sign it, and the transaction will be returned back to your adapter and then to Run.
+When a jig is updated, RUN builds a transaction that spends its UTXO. These inputs need to be signed, so RUN then calls the `sign()` method. You'll want to sign the transaction similar to the `pay()` method in the purse. You'll send the transaction to the wallet, the wallet will sign it, and the transaction will be returned back to your adapter and then to RUN.
 
-For a first implementation, simply sign all inputs you are able to. The `bsv` library can do this by calling `tx.sign(appPrivateKey)`. You may want to offer the option of prompting the user for each action. This minimizes the ability for an app to take actions on the user's behalf. We'll cover how to make sense of Run transactions in Chapter 4. You may also want to limit signing to only Run transactions as covered in Chapter 2.
+For a first implementation, simply sign all inputs you are able to. The `bsv` library can do this by calling `tx.sign(appPrivateKey)`. You may want to offer the option of prompting the user for each action. This minimizes the ability for an app to take actions on the user's behalf. We'll cover how to make sense of RUN transactions in Chapter 4. You may also want to limit signing to only RUN transactions as covered in Chapter 2.
 
 When you're ready, paste this code into `test.html`:
 
@@ -148,5 +148,5 @@ Here are some additional things to try:
 
 * Ensure your wallet generates unique owners for each app with tests
 * Document your wallet adapter's security model and threats
-* Read about Locks in the Run documentation
+* Read about Locks in the RUN documentation
 * Look at the owner implementation in the demo project

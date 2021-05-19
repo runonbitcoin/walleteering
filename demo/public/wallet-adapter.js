@@ -1,7 +1,7 @@
 
 
 /**
- * The adapter that implements Run's Owner and Purse APIs
+ * The adapter that implements RUN's Owner and Purse APIs
  */
 class ThirdPartyWallet {
     /**

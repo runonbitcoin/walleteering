@@ -2,7 +2,7 @@
 
 ## Broadcast notifications
 
-Many wallets need to be notified when a transaction is broadcast to update their UTXOs. Some wallets will even want to broadcast to Bitcoin nodes themselves. The `Purse API` has an optional `broadcast()` method for this purse. RUN will call the `broadcast()` method after the transaction is fully signed and before RUN broadcasts the transaction itself. If you choose to broadcast the transaction yourself, be prepared for the case where a node has already received this transaction. This might happen due to timing.
+Many wallets need to be notified when a transaction is broadcast to update their UTXOs. Some wallets will even want to broadcast to Bitcoin nodes themselves. The `Purse API` has an optional `broadcast()` method for this purpose. RUN will call the `broadcast()` method after the transaction is fully signed and before RUN broadcasts the transaction itself. If you choose to broadcast the transaction yourself, be prepared for the case where a node has already received this transaction. This might happen due to timing.
 
 Similarly, RUN supports exporting a transaction to be imported by another instance of RUN, rather than broadcasting it immediately. This is useful when two or more owners need to co-sign a transaction, such as an atomic swap. This means that `pay()` is not a reliable way of determining whether a UTXOs have been spent. You should wait until `broadcast()` is called.
 
@@ -23,11 +23,11 @@ In [Chapter 3](03-owner.md), we wrote that the `nextOwner()` method should retur
 
 ## Increasing privacy
 
-While jigs are inherently non-fungible, sometimes it's important to hide the fact that a single user owns two different jigs. For example, perhaps it would be advantageous not to make obvious that you own a rare weapon in a game to your opponents. Every time `nextOwner()` is called, you can return a different address. Your `sign()` method should be able to sign any owner previously returned. However, the `Inventory` uses only a single address to load user jigs, so you'll have to offer app developers another way to get their jigs.
+While jigs are inherently non-fungible, sometimes it's important to hide the fact that a single user owns two different jigs. For example, perhaps it would be advantageous not to make obvious that you own a rare weapon in a game to your opponents. Every time `nextOwner()` is called, you can return a different address. Your `sign()` method should be able to sign any owner previously returned. However, the `Inventory` uses only a single address to load user jigs, so you'll have to offer app developers another way to get their jigs or UTXOs.
 
 ## Parsing RUN metadata
 
-The `OP_RETURN` output in a RUN transaction contains a list of actions. Wallets may only want to sign for certain actions, or they may wish to alert the user that actions were taken on their behalf. You can access this metadata using `Run.util.metadata(rawtx). We will have more information on this format in this future.
+The `OP_RETURN` output in a RUN transaction contains a list of actions. Wallets may only want to sign for certain actions, or they may wish to alert the user that actions were taken on their behalf. You can access this metadata using `Run.util.metadata(rawtx)`. We will have more information on this format in this future.
 
 ## Parallelization
 

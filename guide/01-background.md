@@ -2,7 +2,7 @@
 
 The goal of this guide is to build a basic wallet adapter for RUN. Your new adapter will allow third-party apps to use your wallet in combination with RUN, not only to make payments but also to store and use jigs.
 
-A common request from app developers is that they would like their users to be able to login to their app using a wallet, similar to Login with Google or Facebook, and then for users to be able to access their data. Apps like Twetch do this today. However, compared to other OP_RETURN protocols, RUN takes a little more work to support. Making these changes will be worth it.
+A common request from app developers is that they would like their users to be able to login to their app using a wallet, similar to Login with Google or Facebook, and then for users to be able to access their data. Apps like Twetch do this today. However, compared to other OP_RETURN protocols, RUN takes a little more work to support. Making these changes will be worth it, however!
 
 Wallets are experts at securing keys. App developers, generally, are not. We think that private keys should be fully managed by wallets and should never be exposed to the app developer or to RUN. We'll build towards that design in this guide.
 
@@ -71,7 +71,7 @@ RUN creates two token outputs, one for the `Dragon` class, and one for the `new 
 
 | Inputs | Outputs |
 |--------|---------|
-| | OP_RETURN<br>`new Dragon()`<br>Dragon code: "class Dragon extends Jig { }" |
+| | OP_RETURN<br>Deploy: "class Dragon extends Jig { }"<br>`new Dragon()`|
 | | P2PKH<br>Dragon class<br>546 satoshis |
 | | P2PKH<br>Dragon instance<br>546 satoshis |
 

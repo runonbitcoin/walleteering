@@ -130,7 +130,7 @@ Make sure all tests pass before moving on. Congratulations, you've now implement
 
 ## Securing your wallet
 
-Nothing prevents an app from calling `run.purse.pay()` to pay for arbitrary transactions that are unrelated to RUNj. This might actually be OK depending on your wallet's goals, but if you'd like to restrict the wallet adapter to only pay for RUN transactions, this is easy. A RUN transaction always has an OP_RETURN output as its first output, and the contents of its script will begin with `OP_FALSE OP_RETURN "run"`, or 006a0372756e in hex. Here's code to check for RUN transactions using the `bsv` library:
+Nothing prevents an app from calling `run.purse.pay()` to pay for arbitrary transactions that are unrelated to RUN. This might actually be OK depending on your wallet's goals, but if you'd like to restrict the wallet adapter to only pay for RUN transactions, this is easy. A RUN transaction always has an OP_RETURN output as its first output, and the contents of its script will begin with `OP_FALSE OP_RETURN "run"`, or 006a0372756e in hex. Here's code to check for RUN transactions using the `bsv` library:
 
 ```
 const isRUNTransaction =

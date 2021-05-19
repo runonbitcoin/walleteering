@@ -17,7 +17,7 @@ Here is RUN's `Owner API`:
 
     class Owner {
         async nextOwner(): string|Lock
-        async sign(rawtx: string, parents: Array<?{satoshis, script}>, locks: Array<?Lock>)
+        async sign(rawtx: string, parents: Array<?{satoshis, script}>, locks: Array<?Lock>): string
     }
 
 This is what we'll implement. Our wallet will implement both the `Purse` and the `Owner` APIs at the same time. Users may pass your wallet as both the `owner` and the `purse`, or they may pass it as a `wallet` which is shorthand for both.

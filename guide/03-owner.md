@@ -16,7 +16,7 @@ In this chapter, we'll learn about and implement the `Owner API`. This API provi
 Here is Run's `Owner API`:
 
     class Owner {
-        owner(): string|Lock
+        async nextOwner(): string|Lock
         async sign(rawtx: string, parents: Array<?{satoshis, script}>, locks: Array<?Lock>)
     }
 
@@ -30,7 +30,7 @@ This is what we'll implement. Our wallet will implement both the `Purse` and the
 
 To get started, paste the following placeholder code into your `MyWallet` class in `my-wallet.js`:
 
-    owner() {
+    nextOwner() {
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>
         // TODO: Implement this section
         // <<<<<<<<<<<<<<<<<<<<<<<<<<<< 
@@ -46,13 +46,13 @@ To get started, paste the following placeholder code into your `MyWallet` class 
         return tx.toString('hex')
     }
 
-## The owner() method
+## The nextOwner() method
 
-First, we'll implement the `owner()` method. Your goal is to **provide an address that is fixed and unique for each app**. Run will use this address to assign new jigs. Let's break it down:
+First, we'll implement the `nextOwner()` method. Your goal is to **provide an address that is fixed and unique for each app**. Run will use this address to assign new jigs. Let's break it down:
 
 > *provide an address*
 
-Why an address? Because the app and Run should not see the wallet's private keys! Key management is a wallet's expertise. Run only needs a way to assign owners to new jigs. Although it's possible and sometimes useful for the `owner()` method to return a public key or a `Lock` instead of an address, these are advanced topics covered for [Chapter 4](04-advanced.md).
+Why an address? Because the app and Run should not see the wallet's private keys! Key management is a wallet's expertise. Run only needs a way to assign owners to new jigs. Although it's possible and sometimes useful for the `nextOwner()` method to return a public key or a `Lock` instead of an address, these are advanced topics covered for [Chapter 4](04-advanced.md).
 
 > *that is fixed*
 
@@ -60,7 +60,7 @@ The address returned should always be the same for a given app. This allows the 
 
 > *and unique for each app*
 
-The owner address should be different for every app. It's important for apps to have their own space to operate in. When an app calls `run.sync()`, Run loads every jig assigned to the `owner()` address. If the owner address were shared between apps, then not only will slow down each app but it creates risks that apps will change each other's data. We don't want that!
+The owner address should be different for every app. It's important for apps to have their own space to operate in. When an app calls `run.sync()`, Run loads every jig assigned to the `nextOwner()` address. If the owner address were shared between apps, then not only will slow down each app but it creates risks that apps will change each other's data. We don't want that!
 
 ### Deriving the private key
 
@@ -84,17 +84,11 @@ function deriveApplicationKey(masterKey, appIdentifier) {
 }
 ```
 
-You may find it useful to create an `async connect(app)` method that connects to your wallet and calculates the owner address before the wallet is even passed into Run. For example:
+`nextOwner()` is async, so you may use it to establish a connection to your wallet. You may also wish to cache the owner address for future `nextOwner()` calls.
 
-```
-const wallet = await MyWallet.connect('<my-app-name>')
-```
+Now you're set. Go ahead and implement the `nextOwner()` method and come back when you're ready to test it.
 
-> **Note**: In 0.5, the `owner()` method is syncronous, so if it relies on any communication with the wallet, that will likely have to be done in a separate async method like `connect()` above. In the future, `owner()` will be async.
-
-Now you're set. Go ahead and implement the `owner()` method and come back when you're ready to test it.
-
-### Testing owner()
+### Testing nextOwner()
 
 Let's give it a shot. Paste this code into `test.html`:
 
@@ -110,7 +104,7 @@ await run.sync()
 console.log('dragon.owner:', dragon.owner)
 ```
 
-Run calls your `owner()` method during `new Dragon()`. The value you return will be assigned as `dragon.owner.` If you're wondering, the reason we can test `owner()` before `sign()` is implemented is because new jigs don't require signatures.
+Run calls your `nextOwner()` method during `new Dragon()`. The value you return will be assigned as `dragon.owner.` If you're wondering, the reason we can test `nextOwner()` before `sign()` is implemented is because new jigs don't require signatures.
 
 Open `test.html` in your browser and then check the web console. If you see `dragon.owner` set to your app's address, congratulations! You've just completed the most difficult part. Let's finish the `Owner API` by implementing the `sign()` method.
 

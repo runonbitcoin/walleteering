@@ -19,23 +19,15 @@ When the user increases the satoshis value of a jig, the purse is expected to pa
 
 ## Custom locking scripts
 
-In [Chapter 3](03-owner.md), we wrote that the `owner()` method should return an address. This isn't strictly true. It's true that most wallets will choose to return a Bitcoin address, but this method supports returning any owner that is supported by Run, including public keys and `Locks`, which are custom locking scripts. Similarly, the `sign()` method is passed a list of locks, one for each input. Each jig input will contain a lock that may be used to detect and sign custom locking scripts. If your wallet would like to implement this, the best place to start is by reading the `Locks` section of the Run documentation and *Example 8: Locks* in the SDK.
+In [Chapter 3](03-owner.md), we wrote that the `nextOwner()` method should return an address. This isn't strictly true. It's true that most wallets will choose to return a Bitcoin address, but this method supports returning any owner that is supported by Run, including public keys and `Locks`, which are custom locking scripts. Similarly, the `sign()` method is passed a list of locks, one for each input. Each jig input will contain a lock that may be used to detect and sign custom locking scripts. If your wallet would like to implement this, the best place to start is by reading the `Locks` section of the Run documentation and *Example 8: Locks* in the SDK.
 
 ## Increasing privacy
 
-While jigs are inherently non-fungible, sometimes it's important to hide the fact that a single user owns two different jigs. For example, perhaps it would be advantageous not to make obvious that you own a rare weapon in a game to your opponents. We consider this enhanced privacy, because it is unlikely to be the default privacy model, but if you would like to support this, you can return an array of owners from `owner()`. Run will use the first one in the list to assign to new resources. Your `sign()` method should be able to sign any owner previously returned.
+While jigs are inherently non-fungible, sometimes it's important to hide the fact that a single user owns two different jigs. For example, perhaps it would be advantageous not to make obvious that you own a rare weapon in a game to your opponents. Every time `nextOwner()` is called, you can return a different address. Your `sign()` method should be able to sign any owner previously returned. However, the `Inventory` uses only a single address to load user jigs, so you'll have to offer app developers another way to get their jigs.
 
 ## Parsing Run actions
 
-The `OP_RETURN` output in a Run transaction contains a list of actions. Wallets may only want to sign for certain actions, or they may wish to alert the user that actions were taken on their behalf. Currently, the only way to access this list is to import the transaction into Run. However, in the future, Run will offer more robust methods to access this list. Stay tuned.
-
-```
-run.transaction.import(tx)
-
-// Inspect run.transaction.actions
-
-run.transaction.rollback()
-```
+The `OP_RETURN` output in a Run transaction contains a list of actions. Wallets may only want to sign for certain actions, or they may wish to alert the user that actions were taken on their behalf. You can access this metadata using `Run.util.metadata(rawtx). We will have more information on this format in this future.
 
 ## Parallelization
 
@@ -43,7 +35,7 @@ Wallet adapters should be as stateless as possible because Run is likely to para
 
 ## Where to go from here?
 
-* Announce your wallet in the `run` channel on [Atlantis](https://atlantis.planaria.network/)
+* Announce your wallet in the `run-sdk` channel on [Atlantis](https://atlantis.planaria.network/)
 * Reach out to apps for integration
 * Publish your source code on GitHub
 * Prepare your wallet for a wave of new apps
